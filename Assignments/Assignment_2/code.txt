@@ -1,0 +1,12 @@
+1
+$ find ../../Data/data-shell/data/pdb -type f -name 'm*' -exec wc -l {} \;
+2
+$ find ../../Data/data-shell/data/pdb -type f -name 'm*' -exec wc -l {} \; > ~/Git_Repositories/Data_Course_PORTER/Assignments/Assignment_2/m_lines.txt
+3
+$ cut -d ',' -f 2 ../../Data/data-shell/data/animals.txt | sort | uniq > ~/Git_Repositories/Data_Course_PORTER/Assignments/Assignment_2/unique_animals.txt
+4
+$ cut -d ',' -f 5 ../../Data/BioLog_Plate_Data.csv | sort | uniq | grep 'Water' -v > ~/Git_Repositories/Data_Course_PORTER/Assignments/Assignment_2/unique_C-substrates.txt
+5
+$ wc ../../Data/data-shell/data/*.txt | sort | tail -n 2 | head -n 1
+6
+
