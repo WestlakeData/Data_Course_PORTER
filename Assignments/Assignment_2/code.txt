@@ -8,5 +8,6 @@ $ cut -d ',' -f 2 ../../Data/data-shell/data/animals.txt | sort | uniq > ~/Git_R
 $ cut -d ',' -f 5 ../../Data/BioLog_Plate_Data.csv | sort | uniq | grep 'Water' -v > ~/Git_Repositories/Data_Course_PORTER/Assignments/Assignment_2/unique_C-substrates.txt
 5
 $ wc ../../Data/data-shell/data/*.txt | sort | tail -n 2 | head -n 1
-6
-
+# Not working
+6 
+$ find ../../Data/data-shell/many_files/ -type f -name *.txt -exec bash ../../Data/data-shell/scripts/sum_lines.sh {} \; > ~/Git_Repositories/Data_Course_PORTER/Assignments/Assignment_2/file_sums.txt
