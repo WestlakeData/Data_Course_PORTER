@@ -16,7 +16,7 @@ vector1*vector2
 
 list.files()
 
-dat = read.csv("./Data/thatch_ant.csv")
+dat = read.csv("./data/thatch_ant.csv")
 names(dat)
 
 #why are these plots different???
@@ -50,7 +50,7 @@ plot(x=dat$Headwidth, y=dat$Mass)
 # as.factor, as.matrix, as.data.frame, as.numeric, as.character, as.POSIXct, etc....
 
 #make a numeric vector to play with:
-nums = c(1,1,2,2,2,2,3,3,3,4,4,4,4,4,4,4,5,6,7,8,9)
+nums <- c(1,1,2,2,2,2,3,3,3,4,4,4,4,4,4,4,5,6,7,8,9)
 class(nums) # make sure it's numeric
 
 # convert to a factor
@@ -180,16 +180,18 @@ size_class_mean_mass = data.frame(...)
 ############ YOUR HOMEWORK ASSIGNMENT ##############
 
 # 1.  Make a scatterplot of headwidth vs mass. See if you can get the points to be colored by "Colony"
-
+plot(x= dat$Headwidth, y= dat$Mass, xlab = "Headwidth (mm)", ylab = "Mass", main = "Thatch Ant Morphology", col = dat$Colony)
 
 # 2.  Write the code to save it (with meaningful labels) as a jpeg file
-
+jpeg("./thatch_ant_plot.jpg")
+plot(x= dat$Headwidth, y= dat$Mass, xlab = "Headwidth (mm)", ylab = "Mass", main = "Thatch Ant Morphology", col = dat$Colony)
+dev.off()
 
 # 3.  Subset the thatch ant data set to only include ants from colony 1 and colony 2
-
+dat[dat$Colony <= 2,]
 
 # 4.  Write code to save this new subset as a .csv file
-
+write.csv(dat[dat$Colony <= 2,], "thatch_ant_colony_1_2.csv")
 
 # 5.  Upload this R script (with all answers filled in and tasks completed) to canvas
       # I should be able to run your R script and get all the plots created and saved, etc.
