@@ -183,7 +183,7 @@ size_class_mean_mass = data.frame(...)
 plot(x= dat$Headwidth, y= dat$Mass, xlab = "Headwidth (mm)", ylab = "Mass", main = "Thatch Ant Morphology", col = dat$Colony)
 
 # 2.  Write the code to save it (with meaningful labels) as a jpeg file
-jpeg("./thatch_ant_plot.jpg")
+jpeg("./images/thatch_ant_plot.jpg")
 plot(x= dat$Headwidth, y= dat$Mass, xlab = "Headwidth (mm)", ylab = "Mass", main = "Thatch Ant Morphology", col = dat$Colony)
 dev.off()
 
@@ -191,7 +191,7 @@ dev.off()
 dat[dat$Colony <= 2,]
 
 # 4.  Write code to save this new subset as a .csv file
-write.csv(dat[dat$Colony <= 2,], "thatch_ant_colony_1_2.csv")
+write.csv(dat[dat$Colony <= 2,], "./data/thatch_ant_colony_1_2.csv")
 
 # 5.  Upload this R script (with all answers filled in and tasks completed) to canvas
       # I should be able to run your R script and get all the plots created and saved, etc.
