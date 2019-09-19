@@ -1,5 +1,6 @@
 dna <- read.csv("DNA_Conc_by_Extraction_Date.csv")
 dna[,"Year_Collected"] <- factor(dna[,"Year_Collected"])
+dna[, "Date_Collected"] <- as.Date(dna[, "Date_Collected"], format = %Y-%m-%d)
 attach(dna)
 
 #Create Histograms for Katy & Ben
@@ -39,4 +40,10 @@ mean(dna[Year_Collected == "2011", "DNA_Concentration_Ben"])/mean(dna[Year_Colle
 mean(dna[Year_Collected == "2012", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2012", "DNA_Concentration_Katy"])
 
 #Downstairs
-downstairs <- dna[,Lab = "Downstairs"]
+downstairs <- dna[Lab == "Downstairs",]
+jpeg("Ben_DNA_over_time.jpg")
+plot(as.POSIXct(Date_Collected), DNA_Concentration_Ben)
+dev.off()
+
+
+
