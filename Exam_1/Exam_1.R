@@ -45,5 +45,6 @@ jpeg("Ben_DNA_over_time.jpg")
 plot(as.POSIXct(Date_Collected), DNA_Concentration_Ben)
 dev.off()
 
-
+#Bonus
+df <- mean(dna[Year_Collected == "2001", "DNA_Concentration_Ben"])
 
