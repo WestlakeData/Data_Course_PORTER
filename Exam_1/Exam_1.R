@@ -22,4 +22,21 @@ plot(katy.year, xlab = "YEAR", ylab = "DNA Concentration", main = "Katy's Extrac
 dev.off()
 
 #Compare Ben & Katy Extractions by Year
+summary(DNA_Concentration_Ben)
+summary(DNA_Concentration_Katy)
 
+mean(dna[Year_Collected == "2001", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2001", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2002", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2002", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2003", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2003", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2004", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2004", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2005", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2005", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2006", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2006", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2007", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2007", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2008", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2008", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2009", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2009", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2010", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2010", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2011", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2011", "DNA_Concentration_Katy"])
+mean(dna[Year_Collected == "2012", "DNA_Concentration_Ben"])/mean(dna[Year_Collected == "2012", "DNA_Concentration_Katy"])
+
+#Downstairs
+downstairs <- dna[,Lab = "Downstairs"]
