@@ -32,3 +32,4 @@ ggplot(data = iris, aes(x= Petal.Length, y= Sepal.Length, color = Species)) +
                     name="Factors",
                     breaks=c("setosa", "versicolor", "virginica"),
                     labels=c("1", "2", "3"))
+ 
