@@ -46,9 +46,9 @@ and use the info to reproduce the fourth figure below. Save it as "iris_fig4.png
 This last task requires you to use the internet to solve a tricky R task.  This is the most important skill you can learn in this course!
 You'll probably have to figure out some functions you've not seen before and reconfigure them to the iris data.
 
-![](i1.png)
-![](i2.png)
+![](./images/i1.png)
+![](./images/i2.png)
 
-![](i3.png)
+![](./images/i3.png)
 
-![](i4.png)
+![](./images/i4.png)
