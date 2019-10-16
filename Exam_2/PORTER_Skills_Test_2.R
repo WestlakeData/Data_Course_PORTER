@@ -2,7 +2,7 @@
 library(tidyverse)
 library(modelr)
 
-#Task I
+#Task I ####
 #Read in data
 
 salaries <- read.csv("./data/salaries.csv")
@@ -25,7 +25,7 @@ plot1
 
 dev.off()
 
-#Task II. Linear modeling and predictions
+#Task II. Linear modeling and predictions ####
 #Read in atmosphere.csv (pretty clean data set)
 
 atmo <- read.csv("./data/atmosphere.csv")
@@ -59,3 +59,23 @@ model.predictions <- gather_predictions(atmo, lin.mod1, lin.mod2, lin.mod3, .pre
 
 ggplot(atmo, aes(atmo$Aerosol_Density*atmo$Precip*atmo$Year, atmo$Diversity)) +
   geom_point()
+
+# Write code to show the predicted values of Diversity for each model using the hypothetical new data found in hyp_data.csv (10 points)
+
+
+#Export a text file that contains the summary output from *both* your models to "model_summaries.txt" (10 points)  ***(Hint: use the sink() function)***
+
+
+
+
+# *Bonus* ####
+#Add these hypothetical predicted values (from hypothetical data - Part II, Step 6) to a plot of actual data 
+#and differentiate them by color. (10 bonus points possible for a pretty graph)
+
+
+
+
+# *Bonus* ####
+#Split the atmosphere.csv data into training and testing sets, randomly. Train your single best model on 50% of the data and 
+#test it on the remaining 50% of the data. Find some way to show how well it fits the data.
+#This is the only cross-validation part of the exam. (10 bonus points for proper code)
