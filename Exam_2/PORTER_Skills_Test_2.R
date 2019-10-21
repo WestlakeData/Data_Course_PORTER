@@ -1,4 +1,4 @@
-#Library Calls
+#Library Calls ####
 library(tidyverse)
 library(modelr)
 
@@ -33,35 +33,38 @@ atmo <- read.csv("./data/atmosphere.csv")
 #Create three different linear models with Diversity as the dependent variable. The three models should have different
 #predictors, or at least different numbers of predictors, with or without interaction terms. (10 points)
 
-lin.mod1 <- lm(atmo$Diversity ~ atmo$Aerosol_Density + atmo$CO2_Concentration + atmo$Precip + atmo$Year, data = atmo)
+m1 <- lm(atmo$Diversity ~ atmo$Aerosol_Density + atmo$CO2_Concentration + atmo$Precip + atmo$Year, data = atmo)
 summary(lin.mod1)
 
-lin.mod2 <- lm(atmo$Diversity ~ atmo$Aerosol_Density + atmo$Precip + atmo$Year, data = atmo)
+m2 <- lm(atmo$Diversity ~ atmo$Aerosol_Density + atmo$Precip + atmo$Year, data = atmo)
 summary(lin.mod2)
 
-lin.mod3 <- lm(atmo$Diversity ~ atmo$Aerosol_Density * atmo$Precip * atmo$Year, data = atmo)
+m3 <- lm(atmo$Diversity ~ atmo$Aerosol_Density * atmo$Precip * atmo$Year, data = atmo)
 summary(lin.mod3)
 
 #Compare the residuals of the three models and somehow document which has best explanatory power for the data (10 points)
 
-mean(abs(lin.mod1$residuals))
-mean(abs(lin.mod2$residuals))
-mean(abs(lin.mod3$residuals))
+mean(abs(m1$residuals))
+mean(abs(m2$residuals))
+mean(abs(m3$residuals))
 
 "Model 3 which incorporated interactions had the lowest mean residual when compared to the other 2 models"
 "When comparing the 'Multiple R-squared' values for each model Model 3 had the highest value at 0.9828, meaning that this model explains 98.28% of the variation found in the data"
 
 #Use all your models to predict Diversity values in the data set (10 points)
 
-model.predictions <- gather_predictions(atmo, lin.mod1, lin.mod2, lin.mod3, .pred = "Diversity.pred")
+m.pred <- gather_predictions(atmo, m1, m2, m3, .pred = "Diversity.pred")
 
 #Make a plot showing actual Diversity values, along with the three models' predicted Diversity values.
 
-ggplot(atmo, aes(atmo$Aerosol_Density*atmo$Precip*atmo$Year, atmo$Diversity)) +
-  geom_point()
+ggplot(atmo, aes(atmo$Aerosol_Density, atmo$Diversity)) +
+  geom_point() +
+  geom_point(data = m.pred, aes(m.pred$Diversity.pred, m.pred$Aerosol_Density, color = m.pred$model), alpha = 0.5)
 
 # Write code to show the predicted values of Diversity for each model using the hypothetical new data found in hyp_data.csv (10 points)
 
+hyp <- read.csv("./data/hyp_data.csv")
+hyp.pred <- gather_predictions(hyp, lin.mod1, lin.mod2, lin.mod3, .pred = "Diversity.Pred")
 
 #Export a text file that contains the summary output from *both* your models to "model_summaries.txt" (10 points)  ***(Hint: use the sink() function)***
 
