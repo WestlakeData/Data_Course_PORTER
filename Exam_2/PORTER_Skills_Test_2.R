@@ -34,13 +34,13 @@ atmo <- read.csv("./data/atmosphere.csv")
 #predictors, or at least different numbers of predictors, with or without interaction terms. (10 points)
 
 m1 <- lm(atmo$Diversity ~ atmo$Aerosol_Density + atmo$CO2_Concentration + atmo$Precip + atmo$Year, data = atmo)
-summary(lin.mod1)
+summary(m1)
 
 m2 <- lm(atmo$Diversity ~ atmo$Aerosol_Density + atmo$Precip + atmo$Year, data = atmo)
-summary(lin.mod2)
+summary(m2)
 
 m3 <- lm(atmo$Diversity ~ atmo$Aerosol_Density * atmo$Precip * atmo$Year, data = atmo)
-summary(lin.mod3)
+summary(m3)
 
 #Compare the residuals of the three models and somehow document which has best explanatory power for the data (10 points)
 
@@ -53,22 +53,37 @@ mean(abs(m3$residuals))
 
 #Use all your models to predict Diversity values in the data set (10 points)
 
-m.pred <- gather_predictions(atmo, m1, m2, m3, .pred = "Diversity.pred")
+m1.pred <- predict(m1, atmo)
+m2.pred <- predict(m2, atmo)
+m3.pred <- predict(m3, atmo)
+
+predictions <- cbind(atmo, m1.pred, m2.pred, m3.pred)
 
 #Make a plot showing actual Diversity values, along with the three models' predicted Diversity values.
 
 ggplot(atmo, aes(atmo$Aerosol_Density, atmo$Diversity)) +
   geom_point() +
-  geom_point(data = m.pred, aes(m.pred$Diversity.pred, m.pred$Aerosol_Density, color = m.pred$model), alpha = 0.5)
+  geom_point(data = predictions, aes(predictions$Aerosol_Density, predictions$m1.pred),color = "Red", alpha = 0.25, size = 4) +
+  geom_smooth(method = lm, color = "Red", se = F) +
+  geom_point(data = predictions, aes(predictions$Aerosol_Density, predictions$m2.pred),color = "Blue", alpha = 0.25, size = 2) +
+  geom_smooth(method = lm, color = "Blue", se = F) +
+  geom_point(data = predictions, aes(predictions$Aerosol_Density, predictions$m1.pred),color = "Green", alpha = 0.25, size = .5) +
+  geom_smooth(method = lm, color = "Green", se = F)
 
 # Write code to show the predicted values of Diversity for each model using the hypothetical new data found in hyp_data.csv (10 points)
 
 hyp <- read.csv("./data/hyp_data.csv")
-hyp.pred <- gather_predictions(hyp, lin.mod1, lin.mod2, lin.mod3, .pred = "Diversity.Pred")
+hyp.pred1 <- predict(m1, hyp)
+hyp.pred2 <- predict(m2, hyp)
+hyp.pred3 <- predict(m3, hyp)
 
 #Export a text file that contains the summary output from *both* your models to "model_summaries.txt" (10 points)  ***(Hint: use the sink() function)***
 
-
+sink(file = "model_summaries.txt")
+summary(m1)
+summary(m2)
+summary(m3)
+sink()
 
 
 # *Bonus* ####
@@ -82,3 +97,18 @@ hyp.pred <- gather_predictions(hyp, lin.mod1, lin.mod2, lin.mod3, .pred = "Diver
 #Split the atmosphere.csv data into training and testing sets, randomly. Train your single best model on 50% of the data and 
 #test it on the remaining 50% of the data. Find some way to show how well it fits the data.
 #This is the only cross-validation part of the exam. (10 bonus points for proper code)
+
+
+train.index <- sample(seq_len(nrow(atmo)), size = floor(0.5 * nrow(atmo)))
+
+train <- atmo[train.index, ]
+test <- atmo[-train.index, ]
+
+model <- lm(atmo$Diversity ~ atmo$Aerosol_Density * atmo$Precip * atmo$Year, data = train)
+model.pred <- predict(model, test)
+
+prediction.model <- cbind(test, model.pred)
+
+ggplot(prediction.model, aes(Aerosol_Density, model.pred), main = "Atmospheric Diversity") +
+  geom_point() +
+  geom_smooth(method = lm, aes(prediction.model$model.pred))

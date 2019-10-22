@@ -1,0 +1,71 @@
+
+Call:
+lm(formula = atmo$Diversity ~ atmo$Aerosol_Density + atmo$CO2_Concentration + 
+    atmo$Precip + atmo$Year, data = atmo)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-502.32  -89.84   -8.76   96.54  779.80 
+
+Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            -7.311e+04  1.964e+04  -3.723 0.000236 ***
+atmo$Aerosol_Density    1.300e+00  1.012e-01  12.850  < 2e-16 ***
+atmo$CO2_Concentration  3.999e+00  4.813e+00   0.831 0.406727    
+atmo$Precip             1.466e+02  5.955e+00  24.617  < 2e-16 ***
+atmo$Year               3.567e+01  1.065e+01   3.349 0.000917 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 164.5 on 293 degrees of freedom
+Multiple R-squared:  0.9439,	Adjusted R-squared:  0.9431 
+F-statistic:  1231 on 4 and 293 DF,  p-value: < 2.2e-16
+
+
+Call:
+lm(formula = atmo$Diversity ~ atmo$Aerosol_Density + atmo$Precip + 
+    atmo$Year, data = atmo)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-508.13  -86.83   -3.14   90.39  777.52 
+
+Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+(Intercept)          -8.835e+04  7.005e+03  -12.61   <2e-16 ***
+atmo$Aerosol_Density  1.300e+00  1.011e-01   12.85   <2e-16 ***
+atmo$Precip           1.460e+02  5.913e+00   24.70   <2e-16 ***
+atmo$Year             4.403e+01  3.490e+00   12.62   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 164.5 on 294 degrees of freedom
+Multiple R-squared:  0.9437,	Adjusted R-squared:  0.9432 
+F-statistic:  1643 on 3 and 294 DF,  p-value: < 2.2e-16
+
+
+Call:
+lm(formula = atmo$Diversity ~ atmo$Aerosol_Density * atmo$Precip * 
+    atmo$Year, data = atmo)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-470.48  -45.22   -7.52   49.57  269.87 
+
+Coefficients:
+                                             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                                 1.586e+04  7.421e+03   2.137 0.033440 *  
+atmo$Aerosol_Density                       -8.733e+02  3.495e+01 -24.990  < 2e-16 ***
+atmo$Precip                                 1.167e+04  2.033e+03   5.742 2.36e-08 ***
+atmo$Year                                  -7.915e+00  3.697e+00  -2.141 0.033115 *  
+atmo$Aerosol_Density:atmo$Precip            1.221e+01  3.145e+00   3.883 0.000128 ***
+atmo$Aerosol_Density:atmo$Year              4.367e-01  1.745e-02  25.033  < 2e-16 ***
+atmo$Precip:atmo$Year                      -5.794e+00  1.013e+00  -5.722 2.62e-08 ***
+atmo$Aerosol_Density:atmo$Precip:atmo$Year -6.076e-03  1.564e-03  -3.885 0.000127 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 91.65 on 290 degrees of freedom
+Multiple R-squared:  0.9828,	Adjusted R-squared:  0.9823 
+F-statistic:  2362 on 7 and 290 DF,  p-value: < 2.2e-16
+
