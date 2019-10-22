@@ -77,6 +77,9 @@ hyp.pred1 <- predict(m1, hyp)
 hyp.pred2 <- predict(m2, hyp)
 hyp.pred3 <- predict(m3, hyp)
 
+"You cannot use the models created to predict the data in hyp_data.csv because the data values in hyp_dtat.csv lay outside the data range of the training data."
+"Linear regression models cannot accurately predict outside the range of trainig data values."
+
 #Export a text file that contains the summary output from *both* your models to "model_summaries.txt" (10 points)  ***(Hint: use the sink() function)***
 
 sink(file = "model_summaries.txt")
