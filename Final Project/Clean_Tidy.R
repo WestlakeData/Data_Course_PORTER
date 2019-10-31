@@ -25,21 +25,21 @@ df$State <- as.factor(df$State)
 df$Municipality <- as.factor(df$Municipality)
 
 #Seperate into Countries ####
-#Country.Names <- levels(df$Country)
-#for (i in 1:nlevels(df$Country)) {
-#  assign(Country.Names[i], filter(df, df$Country == Country.Names[i]))
-#  fn<- names(Filter(is.factor, Country.Names[i]))
-#}
+Country.Names <- levels(df$Country)
+for (i in 1:nlevels(df$Country)) {
+  assign(Country.Names[i], filter(df, df$Country == Country.Names[i]))
+  fn<- names(Filter(is.factor, Country.Names[i]))
+}
 
 #Process Each Country to standardize data format
 #Argentina
 names(Filter(is.factor, Argentina))
 Argentina$Country <- factor(Argentina$Country)
 ARG <- droplevels.factor(Argentina)
-Argentina %>% filter(data_field_code == "AR0003" | data_field_code == "AR0001") %>%
-  ggplot(aes(x= report_date, y = cases, color = data_field)) +
-  geom_line() +
-  facet_wrap()
+p1 <- Argentina %>% filter(data_field_code == "AR0003" | data_field_code == "AR0001") %>%
+  ggplot(aes(x= report_date, y = cases, color = State)) +
+  geom_point() +
+  geom_smooth(se=F)
 
-
+ggplotly(p1)
 #Columbia
