@@ -43,3 +43,11 @@ p1 <- Argentina %>% filter(data_field_code == "AR0003" | data_field_code == "AR0
 
 ggplotly(p1)
 #Columbia
+confirmed <-c("CO0001", "CO0002")
+COL <- Colombia %>% filter(data_field_code == confirmed) %>% group_by(report_date, State) %>% summarise(total_cases = sum(cases))
+p2 <- ggplot(COL, aes(x= report_date, y = total_cases, color = State)) +
+  geom_point() +
+  geom_smooth(se=F)
+
+ggplotly(p2)
+WWWAwawwww1awa1
