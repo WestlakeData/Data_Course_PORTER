@@ -1,5 +1,6 @@
 # Library Calls ####
 library(tidyverse)
+library(plotly)
 
 #Load Data ####
 df <- read.csv("./data/cdc_zika.csv")
@@ -39,15 +40,27 @@ ARG <- droplevels.factor(Argentina)
 p1 <- Argentina %>% filter(data_field_code == "AR0003" | data_field_code == "AR0001") %>%
   ggplot(aes(x= report_date, y = cases, color = State)) +
   geom_point() +
-  geom_smooth(se=F)
+  geom_smooth(se=F) +
+  labs(title = "Argentina")
 
 ggplotly(p1)
+
 #Columbia
-confirmed <-c("CO0001", "CO0002")
+confirmed.COL <-c("CO0001", "CO0002")
 COL <- Colombia %>% filter(data_field_code == confirmed) %>% group_by(report_date, State) %>% summarise(total_cases = sum(cases))
 p2 <- ggplot(COL, aes(x= report_date, y = total_cases, color = State)) +
   geom_point() +
-  geom_smooth(se=F)
+  geom_smooth(se=F) +
+  labs(title = "Colombia")
 
 ggplotly(p2)
-WWWAwawwww1awa1
+
+#Dominican Republic
+DR.codes <- distinct(Dominican_Republic, Dominican_Republic$data_field, Dominican_Republic$data_field_code )
+DR <- Dominican_Republic %>% filter(location_type != "country") %>% filter(data_field_code == "DO0002") %>% group_by(report_date, State) %>% summarise(total_cases = sum(cases))
+p3 <- ggplot(DR, aes(x= report_date, y = total_cases, color = State)) +
+  geom_point() +
+  geom_smooth(se=F) +
+  labs(title = "Dominican Republic")
+
+ggplotly(p3)
