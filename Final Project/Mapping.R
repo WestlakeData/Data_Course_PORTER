@@ -3,34 +3,16 @@ library(tidyverse)
 library(digest)
 library(ggmap)
 library(maps)
-#library(rgdal)
-
-api <- readLines("../../google_api.txt") 
-register_google(key = readLines("../../google_api.txt"))
+library(mapdata)
 
 #Register Google Maps API Key
-register_google(key = key)
-
-#Install ColMaps####
-install.packages("devtools")
-devtools::install_github("nebulae-co/colmaps")
+register_google(key = readLines("../../google_api.txt"))
 
 #Create Colombia Map ####
-COL.box <- c(left = -79.302364, bottom = -4.709750, right = -64.682794, top = 13.225237)
-map.COL <- get_map(location = COL.box, maptype= "roadmap", color = "bw", force = T)
-gmap.COL <- get_googlemap(center = c(lon = -72.976339, lat = 4.299023),zoom = 5, maptype = "roadmap", source = "google", force = T)
+#map.COL <- get_map(location = "Colombia", maptype= "roadmap", color = "bw", force = T, zoom = 5)
+map.COL <- readRDS("./data/ColombiaMap.RDS")
+ggmap(map.COL, borders(regions = state))
+saveRDS(map.COL, "./data/ColombiaMap.RDS")
 
-ggmap(map.COL)
-
-
-
-#Load SHP file data ####
-library(rgdal)
-shpData <- readOGR(dsn="./images/mpio_84.shp")
-proj4string(shpData) # describes data’s current coordinate reference system
-
-
-# to change to correct projection
-shpData <- spTransform(shpData,
-                       CRS("+proj=longlat +datum=WGS84")) 
-ogrListLayers(dsn = "./images/mpio_84.prj")
+COL <- map_data("colombia")
+help(package = "mapdata")

@@ -5,6 +5,8 @@ library(maps)
 library(gganimate)
 library(digest)
 library(gapminder)
+library(gifski)
+library(transformr)
 
 #devtools::install_github("dkahle/ggmap")
 
@@ -22,7 +24,7 @@ voted.join <- inner_join(sub, voted, by = "VoterID")
 
 
 
-#Geocode Voter
+#Geocode Voter Addresses ####
 register_google(key = api)
 for(i in 1:nrow(voted.join)){
   # Print("Working...")
@@ -50,14 +52,38 @@ ggmap(gmap.COL) +
 
 saveRDS(gmap.SS, "./data/Saratoga Springs Map.RDS")
 
-#Just the Plot on the Map
+#Just the Plot on the  ####
+gmap.SS <- readRDS("./data/Saratoga Springs Map.RDS") #Read saved Map
+voted.join <- read.csv("./data/geocoded_voters.csv") #Read in geocoded Addresses
+candidates <- read.csv("./data/Candidates.csv") #Read in geocoded candidate Addresses
+
+voted.join$VOTED <- as.Date(voted.join$VOTED, format = '%m/%d/%Y')
+
 ggmap(gmap.SS) +
   geom_point(aes(x = lon, y = lat, color = voted.join$VOTED), data = voted.join, 
              alpha = .5, size = 1) +
   scale_color_discrete(guide = 'none') +
   stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.15, bins = 15,
                  size = 0.1, data = voted.join, geom = "polygon") +
-  scale_fill_gradient(breaks = c(50,475),
+  scale_fill_gradient(breaks = c(50,450),
+                      labels = c("Low", "High"),
+                      low = "red", high = "green") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.9,0.22)) +
+  labs(title = "2019 Saratoga Springs Voter Turnout") +
+  geom_point(aes(x = lon, y = lat), data = candidates, color = 'black', size = 2)
+
+#Prepped for Animation
+density.map <- ggmap(gmap.SS) +
+  geom_point(aes(x = lon, y = lat, color = voted.join$VOTED), data = voted.join, 
+             alpha = .5, size = 1) +
+  scale_color_discrete(guide = 'none') +
+  stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.15, bins = 15,
+                 size = 0.1, data = voted.join, geom = "polygon") +
+  scale_fill_gradient(breaks = c(50,750),
                       labels = c("Low", "High"),
                       low = "red", high = "green") +
   theme(legend.position = "right") +
@@ -66,17 +92,10 @@ ggmap(gmap.SS) +
         axis.title = element_blank(),
         legend.title = element_blank(),
         legend.position = c(0.9,0.22)) +
-  labs(title = "2019 Saratoga Springs Voter Turnout")
-  
-#Prepped for Animation
-density.map <- ggmap(gmap.SS) +
-  geom_point(aes(x = lon, y = lat, color = voted.join$VOTED), data = voted.join, 
-             alpha = .5, size = 1)+ 
-  stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.15, bins = 15,
-                 size = 0.1, data = voted.join, geom = "polygon") +
-  scale_fill_gradient(low = "green", high = "red") +
-  labs(title = "Total Voter Turnout {frame_time}") + 
-  transition_states(voted.join$VOTED)
+  ggtitle("2019 Saratoga Springs Voter Turnout", subtitle = "Date: {closest_state}") +
+  #geom_point(aes(x = lon, y = lat), data = candidates, color = 'black', size = 2) +
+  transition_states(voted.join$VOTED, 
+                    state_length = 5)
 
-gganimate(density.map)
-dev.off()
+density.map
+
