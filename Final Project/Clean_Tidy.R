@@ -1,6 +1,5 @@
 # Library Calls ####
-library(tidyverse)
-library(plotly)
+library(tidyverse); library(plotly); library(tidyr)
 
 #Load Data ####
 df <- read.csv("./data/cdc_zika.csv")
@@ -46,8 +45,31 @@ p1 <- Argentina %>% filter(data_field_code == "AR0003" | data_field_code == "AR0
 ggplotly(p1)
 
 #Columbia
+COL.colnames <- c("Country", "State", "Municipality")
+COL.muni <- Colombia %>% select(COL.colnames) %>% unique()
+COL.muni <- as.data.frame(paste(COL.muni$Municipality, COL.muni$State, COL.muni$Country, sep = ", "), stringsAsFactors = F)
+colnames(COL.muni) <- "City"
+
+#geocode Colombian Cities
+register_google(key = readLines("../../google_api.txt"))
+for(i in 1:nrow(COL.muni)){
+  result <- tryCatch(geocode(COL.muni$City[i], output = "latlona", source = "google"),
+                     warning = function(w) data.frame(lon = NA, lat = NA, geoAddress = NA))
+  COL.muni$lon[i] <- as.numeric(result[1])
+  COL.muni$lat[i] <- as.numeric(result[2])
+  COL.muni$geoAddress[i] <- as.character(result[3])
+} 
+saveRDS(COL.muni, "./data/ColombiaCitiesGeocoded.RDS")
+
+#Seperate City Names
+COL.muni <- COL.muni %>% separate(City, c("City", "State", "Country"), sep = ", ")
+
+#Join Disease data with geocoding
+COL.muni.cases <- left_join(Colombia, COL.muni, by = c("Country" = "Country", "State" = "State", "Municipality" = "City"))
+saveRDS(COL.muni.cases, "./data/ColombiaZikaGeoCases.RDS")
+
 confirmed.COL <-c("CO0001", "CO0002")
-COL <- Colombia %>% filter(data_field_code == confirmed) %>% group_by(report_date, State) %>% summarise(total_cases = sum(cases))
+COL <- Colombia %>% filter(data_field_code == confirmed.COL) #%>% group_by(report_date, State) %>% summarise(total_cases = sum(cases))
 p2 <- ggplot(COL, aes(x= report_date, y = total_cases, color = State)) +
   geom_point() +
   geom_smooth(se=F) +
