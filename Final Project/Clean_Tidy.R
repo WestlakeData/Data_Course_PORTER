@@ -86,3 +86,33 @@ p3 <- ggplot(DR, aes(x= report_date, y = total_cases, color = State)) +
   labs(title = "Dominican Republic")
 
 ggplotly(p3)
+
+#Mexico
+MEX <- as.data.frame(filter(Mexico, Mexico$data_field_code == "MX0001"))
+ggplot(MEX, aes(x= report_date, y = cases, color = State)) +
+  geom_point() +
+  geom_smooth(se=F) +
+  labs(title = "Mexico")
+
+MEX.colnames <- c("Country", "State")
+MEX.muni <- Mexico %>% select(MEX.colnames) %>% unique()
+MEX.muni <- as.data.frame(paste(MEX.muni$State, MEX.muni$Country, sep = ", "), stringsAsFactors = F)
+colnames(MEX.muni) <- "City"
+
+#geocode Mexican Cities
+register_google(key = readLines("../../google_api.txt"))
+for(i in 1:nrow(MEX.muni)){
+  result <- tryCatch(geocode(MEX.muni$City[i], output = "latlona", source = "google"),
+                     warning = function(w) data.frame(lon = NA, lat = NA, geoAddress = NA))
+  MEX.muni$lon[i] <- as.numeric(result[1])
+  MEX.muni$lat[i] <- as.numeric(result[2])
+  MEX.muni$geoAddress[i] <- as.character(result[3])
+} 
+saveRDS(MEX.muni, "./data/MexicoStatesGeocoded.RDS")
+
+#Seperate City Names
+MEX.muni <- MEX.muni %>% separate(City, c("State", "Country"), sep = ", ")
+
+#Join Disease data with geocoding
+MEX.muni.cases <- left_join(Mexico, MEX.muni, by = c("Country" = "Country", "State" = "State"))
+saveRDS(MEX.muni.cases, "./data/MexicoZikaGeoCases.RDS")
