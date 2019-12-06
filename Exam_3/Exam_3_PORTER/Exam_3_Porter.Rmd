@@ -44,6 +44,8 @@ summary(df)
 
 ### Exploration Plots
 
+#### Verification of Controls
+
 Of interest was to determine if any of the control samples showed evidence of contamination
 
 ```{r control contamination, echo=FALSE}
@@ -56,6 +58,8 @@ ggplot(control, aes(control$ElapsedTime,control$Absorbance))+
 ```
 
 It can be observed that none of the control wells displayed evidence of contamination.
+
+#### Absorbance by Sample Type
 
 Next, we explored the data to determine if there were any correlations that might be of interest.
 
@@ -75,18 +79,44 @@ Examining these charts, we see that the soil samples generally trend towards a g
 The data above includes all dilution levels and so we examined the effect of Dilution on Absorbance
 
 ```{r dilution, echo=FALSE}
-ggplot(df, aes(df$Dilution, df$Absorbance, color= df$ElapsedTime)) +
-  geom_point(alpha = .1) +
+ggplot(df, aes(Dilution, Absorbance, color= ElapsedTime)) +
+  geom_point(alpha = .25) +
   scale_x_continuous(trans = "log10")+
   facet_wrap(df$Substrate) +
+  labs(color = "Incubation (h)") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank()) +
   geom_smooth(method = "lm", se = F)
 
 filter(df, df$Substrate == "Glycogen") %>% 
   ggplot( aes(Dilution, Absorbance, color= ElapsedTime)) +
   geom_point(alpha = .1) +
-  scale_x_continuous(trans = "log10")+
+  scale_x_continuous(trans = "log10") +
+  labs(title = "Glycogen",
+       color = "Incubation (h)") +
   geom_smooth(method = "lm", se = F)
-
-
 ```
 
+There are several C-substrates that demonstrate a unique profile exemplified by that of Glycogen, above.  At higher concentrations, there is a higher intitial metabolic activity at 24h, but eventually a lower overall metabolic activity at 144h.  Whereas at lower concentrations, the intial metabolism is lower, but continues on to end up with a higher overall level of metabolism.  Indeed, there are many metabolites which display a greater level of metabolism at lower concentrations than at higher ones, particularly at 144h.
+
+## Soil vs Water Microbial Metabolism
+
+As was seen above, there is a significant difference between samples from water sources and samples from soil samples in their ability to metabolize C-substrates.
+```{r soil v water, echo=FALSE}
+water <- filter(df, Sample.ID == "Clear_Creek" | Sample.ID == "Waste_Water")
+soil <- filter(df, Sample.ID == "Soil_1" | Sample.ID == "Soil_2")
+
+soil.table <- soil %>% group_by(Substrate) %>% summarise(median(Absorbance))
+water.table <- water %>% group_by(Substrate) %>% summarise(median(Absorbance))
+table.all <- left_join(soil.table, water.table, by= "Substrate")
+table.all <- mutate(table.all, Difference = table.all$`median(Absorbance).x` - table.all$`median(Absorbance).y`) %>%  arrange(desc(Difference))
+names(table.all)[names(table.all) == "median(Absorbance).x"] <- "Soil"
+names(table.all)[names(table.all) == "median(Absorbance).y"] <- "Water"
+table.all
+```
+
+We examined which metabolites are driving this difference in metabolic activity.  The above table gives the 10 most important contributors to this discrepency.
+
+## Conclusion
+
+We have shown that there is a significant difference in the metabolic activity of microbiomes located in water environments as opposed to those found in soil environments.  We were able to show that this is a general trend, but also were able to identify the most important metabolites that contribute to this observed difference.  We also identified that the dilution of the sample can sometimes display a counter-intuitive increase in metabolic activity.  It was also shown that the control showed no evidence of contamination.
