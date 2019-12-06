@@ -1,0 +1,92 @@
+---
+title: "Exam_3_Porter"
+author: "Chris Porter"
+date: "12/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("tidyverse")
+#install.packages("ggplot2")
+#install.packages("PerformanceAnalytics")
+library(tidyverse)
+library(ggplot2)
+library(PerformanceAnalytics)
+```
+```{r data import, include=FALSE}
+df <- read.csv("../BioLogData_Exam3.csv", sep = "|")
+df <- gather(df, key = "ElapsedTime", value = "Absorbance", Hr_24, Hr_48, Hr_144)
+df$ElapsedTime <- str_remove(df$ElapsedTime, "Hr_")
+df$Sample.ID <- factor(df$Sample.ID, levels = c("Clear_Creek", "Waste_Water", "Soil_1", "Soil_2"))
+df$ElapsedTime <- as.factor(df$ElapsedTime)
+df$ElapsedTime <- factor(df$ElapsedTime, levels = c("24", "48", "144"))
+```
+
+## Data Exploration
+
+The data set contains 1152 observations each containing 8 variables
+
+| Column ID  |  Description                                                                              |
+|------------|-------------------------------------------------------------------------------------------|
+|  **Sample.ID** |  The location the sample was taken from. There are 2 water samples and 2 soil samples.    |
+| **Rep**        |  The experimental replicate. 3 replicates for each combination of experimental variables. |
+| **Well**       | The well number on the BioLog plate.                                                      |
+| **Dilution**   | The dilution factor of the sample.                                                        |
+| **Substrate**  | The name of the carbon source in that well.  "Water" is the negative control.             |
+| **ElapsedTime**      | Number of hours of incubation at which absorbance reading was taken.                |
+| **Absorbance**      | The light absorbance value.                                  |
+
+In order to better characterize the data, the data set was examined to determine areas of potential interest.
+```{r biolog}
+summary(df)
+```
+
+### Exploration Plots
+
+Of interest was to determine if any of the control samples showed evidence of contamination
+
+```{r control contamination, echo=FALSE}
+control <- filter(df, df$Substrate == "Water")
+ggplot(control, aes(control$ElapsedTime,control$Absorbance))+
+  geom_boxplot() +
+  labs(title = "Control(Water) Light Absorbance",
+       y = "Absorbance",
+       x = "Hours of Incubation") 
+```
+
+It can be observed that none of the control wells displayed evidence of contamination.
+
+Next, we explored the data to determine if there were any correlations that might be of interest.
+
+```{r exploration plots, echo=FALSE}
+plot(df$Sample.ID, df$Absorbance, xlab = "Sample ID", ylab = "Absorbance")
+ggplot(df, aes(df$Sample.ID, df$Absorbance, fill = df$Sample.ID))+
+  geom_boxplot() +
+  facet_wrap(df$Substrate) +
+  theme(axis.text.x = element_blank(),
+        legend.title = element_blank(),
+        axis.title.x = element_blank()) +
+  labs(y = "Absorbance")
+```
+
+Examining these charts, we see that the soil samples generally trend towards a greater about of substrate utilization than water samples.  We can see in the second chart that some substrates display a marked difference between samples from water sources, and samples from soil sources.  Other substrates seem to be evenly distributed across all sample types.
+
+The data above includes all dilution levels and so we examined the effect of Dilution on Absorbance
+
+```{r dilution, echo=FALSE}
+ggplot(df, aes(df$Dilution, df$Absorbance, color= df$ElapsedTime)) +
+  geom_point(alpha = .1) +
+  scale_x_continuous(trans = "log10")+
+  facet_wrap(df$Substrate) +
+  geom_smooth(method = "lm", se = F)
+
+filter(df, df$Substrate == "Glycogen") %>% 
+  ggplot( aes(Dilution, Absorbance, color= ElapsedTime)) +
+  geom_point(alpha = .1) +
+  scale_x_continuous(trans = "log10")+
+  geom_smooth(method = "lm", se = F)
+
+
+```
+
