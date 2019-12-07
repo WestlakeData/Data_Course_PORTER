@@ -1,0 +1,18 @@
+---
+title: "Voter Behavior in Saratoga Springs Municipal Election 2019"
+author: "Chris Porter"
+date: "12/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggmap)
+library(ggplot2)
+```
+```{r data prep, include=FALSE}
+df <- read.csv("../../AnonGeocode.csv")
+```
+
+
