@@ -1,8 +1,7 @@
-﻿VoterID,FIRST,MIDDLE,NAME,SECURED,RESIDENCE_ADDRESS,CITY,ZIP,COUNTY,PRECINCT,TYPE,VOTED,CON_DIST,PARTY,Address,lon,lat,geoAddress,,Role
-3085378,Christopher,Blair,Carn,0,191 E Cameron Dr,Saratoga Springs,84045,Utah,SR07,ByMail,10/21/2019,4,Republican,"191 E Cameron Dr, Saratoga Springs UT",-111.8976323,40.3228935,"191 cameron dr, saratoga springs, ut 84045, usa",,Candidate
-6395818,Christopher,Vard,Porter,0,677 Appellation Dr,Saratoga Springs,84045,Utah,SR01,ByMail,10/23/2019,4,Republican,"677 Appellation Dr, Saratoga Springs UT",-111.9410008,40.3743245,"677 appellation dr, saratoga springs, ut 84045, usa",,City Council
-6349849,Barbara,J,Poduska,0,83 E McGregor Ln,Saratoga Springs,84045,Utah,SR10,ByMail,10/28/2019,4,Republican,"83 E McGregor Ln, Saratoga Springs UT",-111.88124,40.298165,"83 mcgregor ln, saratoga springs, ut 84045, usa",,City Council
-2031667,Kara,Jo,Martin,0,133 W Kestrel Dr,Saratoga Springs,84045,Utah,SR10,ByMail,10/21/2019,4,Republican,"706 S Jubilee Dr, Saratoga Springs UT",-111.9152768,40.3493335,"706 s jubilee dr, saratoga springs, ut 84045, usa",,Candidate
-6403853,Andrew,Jay,Robinson,0,542 W Jack Frost Way,Saratoga Springs,84045,Utah,SR05,ByMail,10/23/2019,4,Republican,"542 W Jack Frost Way, Saratoga Springs UT",-111.9337661,40.4047721,"542 jack frost way, saratoga springs, ut 84045, usa",,Candidate
-3318648,Amy,Downing,Loveless,0,4067 S Clipper St,Saratoga Springs,84045,Utah,SR10,ByMail,10/28/2019,4,Republican,"4067 S Clipper St, Saratoga Springs UT",-111.8750006,40.288064,"4077 s clipper st, saratoga springs, ut 84045, usa",,Candidate
-,,,,,,,,,,,,,,,,,,,
+﻿VoterID,NAME,lon,lat
+3085378,Candidate 1,-111.8976323,40.3228935
+6395818,Candidate 2,-111.9410008,40.3743245
+6349849,Candidate 3,-111.88124,40.298165
+2031667,Candidate 4,-111.9152768,40.3493335
+6403853,Candidate 5,-111.9337661,40.4047721
+3318648,Candidate 6,-111.8750006,40.288064
