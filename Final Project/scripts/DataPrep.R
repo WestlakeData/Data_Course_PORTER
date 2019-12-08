@@ -24,9 +24,13 @@ for (i in 1:nrow(voter.train)) {
   
 }
 
-m <- as.data.frame(na.omit(voter.train$min.c.dist)) %>% filter(`na.omit(voter.train$min.c.dist)` < 20000)
+m <- as.data.frame(na.omit(voter.train$min.c.dist)) %>% filter(`na.omit(voter.train$min.c.dist)` < 6000)
 ggplot(m, aes(m$`na.omit(voter.train$min.c.dist)`)) +
-  geom_histogram(bins = 100)
+  geom_histogram(bins = 50) +
+  labs(title = "Voter Distance from Closest Candidate",
+       x = "Distance (m)")
+
+summary(m)
 
 saveRDS(voter.train, file = "./data/geocoded_voters_anon.RDS")
 
@@ -34,20 +38,19 @@ saveRDS(voter.train, file = "./data/geocoded_voters_anon.RDS")
 election.list <- dplyr::select(voter.train, starts_with("X")) %>% names()
 colnum <- which(names(voter.train) %in% election.list)
 
-for (e in 1:length(colnum)) {
-  election <- colnum[e]
-  for (i in 1:nrow(voter.train)) {
-    #print(voter.train[i,election])
-    if(is.na(voter.train[i,election])){
-      print("Is NA")
-      assign(paste("voter.train$Voted", election,"[",i,"]", sep = ""), 0)
+for(e in election.list){
+    colnam <- paste("Voted_", e, sep = "")
+
+  for(i in 1:nrow(voter.train)){  
+    if(is.na(voter.train[i,e])) {
+      voter.train[i,colnam] <- 0
     }
     else{
-      print("Has Value")
-      assign(paste("voter.train$Voted", election,"[",i,"]", sep = ""), 1)
+      voter.train[i,colnam] <- 1
     }
   }
 }
+
 
 #Clustering analysis
 wss <- numeric(15)
