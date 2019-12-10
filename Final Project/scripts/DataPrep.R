@@ -5,11 +5,13 @@
 #Library Calls
 library(tidyverse)
 library(raster)
-library(ggplot2)
 
 #Read data
 voter.train <- read.csv("../../AnonGeocode.csv")
 candidate <- read.csv("./data/Candidates.csv")
+
+#Remove observations that aren't municipal voters
+voter.train <- filter(voter.train, voter.train$Precinct != "SR03:UN" & voter.train$Precinct != "UCFF")
 
 #Candidate Matix
 for (i in 1:6) {
@@ -24,40 +26,29 @@ for (i in 1:nrow(voter.train)) {
   
 }
 
-m <- as.data.frame(na.omit(voter.train$min.c.dist)) %>% filter(`na.omit(voter.train$min.c.dist)` < 6000)
-ggplot(m, aes(m$`na.omit(voter.train$min.c.dist)`)) +
-  geom_histogram(bins = 50) +
-  labs(title = "Voter Distance from Closest Candidate",
-       x = "Distance (m)")
-
-summary(m)
-
-saveRDS(voter.train, file = "./data/geocoded_voters_anon.RDS")
-
 #Create binary values for each election participation
 election.list <- dplyr::select(voter.train, starts_with("X")) %>% names()
-colnum <- which(names(voter.train) %in% election.list)
 
 for(e in election.list){
     colnam <- paste("Voted_", e, sep = "")
 
   for(i in 1:nrow(voter.train)){  
     if(is.na(voter.train[i,e])) {
-      voter.train[i,colnam] <- 0
+      voter.train[i,colnam] <- F
     }
     else{
-      voter.train[i,colnam] <- 1
+      voter.train[i,colnam] <- T
     }
   }
 }
 
+saveRDS(voter.train, file = "./data/geocoded_voters_anon.RDS")
 
-#Clustering analysis
-wss <- numeric(15)
-for (k in 1:15) wss[k] <- sum(kmeans(cars.sub2, centers= k, nstart = 25)$withinss)
-plot(1:15, wss, type = "b", xlab = "Number of Clusters", ylab = "Within Sum of Squares")
+#scoring data file with geocoding
+voter.score <- read.csv("../../Post Election Score.csv")
+colnames(voter.score) <- c("Voter.ID", "Precinct", "Full_Address", "X11.5.2019")
 
-clu.cars <- kmeans(cars.sub2, 4, nstart = 25)
-clu.cars
-plot(cars.sub2, hp, qsec, color= "cluster")
-cars.out <- as.data.frame(cbind(mtcars,clu.cars$cluster))
+
+voter.score <- left_join(voter.score, voter.train[,c(1,26:27)], by = "Voter.ID")
+
+saveRDS(voter.score, file = "../../TrainPartGeo.RDS")
