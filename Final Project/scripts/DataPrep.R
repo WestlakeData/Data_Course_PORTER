@@ -43,12 +43,3 @@ for(e in election.list){
 }
 
 saveRDS(voter.train, file = "./data/geocoded_voters_anon.RDS")
-
-#scoring data file with geocoding
-voter.score <- read.csv("../../Post Election Score.csv")
-colnames(voter.score) <- c("Voter.ID", "Precinct", "Full_Address", "X11.5.2019")
-
-
-voter.score <- left_join(voter.score, voter.train[,c(1,26:27)], by = "Voter.ID")
-
-saveRDS(voter.score, file = "../../TrainPartGeo.RDS")

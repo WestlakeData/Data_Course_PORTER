@@ -1,5 +1,6 @@
 ---
-title: "Voter Behavior in Saratoga Springs Municipal Election 2019"
+title: "Municipal Voter Identification"
+subtitle: "Finding Voters in an Off-Off-Off Cycle Election"
 author: "Chris Porter"
 date: "12/5/2019"
 output: html_document
@@ -10,9 +11,300 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggmap)
 library(ggplot2)
+library(arules)
+library(gganimate)
+library(digest)
+library(gifski)
+library(transformr)
+library(knitr)
 ```
+
+## The Problem
+
+Many people are aware of Presidential and so-called “off-cycle” or midterm elections, but many don’t realize that Utah has elections every year.  Voter identification in Presidential election years has long been fairly simple.  It is somewhat harder to identify mid-term election voters, but increasing campaign budgets have allowed even some down-ballot office-seekers to do rudimentary data mining operations.  In odd years, cities hold non-partisan municipal elections. In alternating 2 year intervals cities elect a Mayor and some councilmembers or the other members of the city council.  The mayoral election generally has a higher turnout “off-off cycle” and the other election its lucky if anyone even knows it’s happening, “off-off-off cycle”.  2019 was a non-mayoral city council race in Saratoga Springs.
+
+Local elections are often plagued by a lack of interest, or awareness.  They also have minimal funds devoted to them, and are often run without staff and primarily by the candidate and close friend volunteers.  Saratoga Springs is a city of roughly 35,000 residents, approximately 13,000 of which are registered to vote.  Municipal elections typically run 15-25% voter turnout meaning that roughly 3,000 people can be expected to vote.  The difference for a candidate sending a mailer to 3,000 voters versus 13,000 can equate to several thousand dollars.  Since most candidates in Saratoga Springs have less than $3000 to spend, effective and efficient use of money is paramount.
+
+The goal is therefore to accurately identify registered voters who are most likely to participate in the 2019 Saratoga Springs municipal election and to create a model that will allow prediction of future voter turnout as well.
+
+## Data Resources
+
+The data available is public voter records obtained from the Utah County Clerk.  There are 11,330 observations which contain 136 attributes including some limited demographic information, as well as voting history (if they voted, not for whom).  As was noted above, there are more than 13,000 registered voters, so roughly 2000 voters’ information is not contained in these records as they have opted to have their information kept private.  This poses an additional challenge to comprehensive identification.  This data was anonymized, and in some instances transformed in order to facilitate use for modelling.  In addition, addresses were geocoded to Lat/Lon coordinates using the Google Maps API.
+
 ```{r data prep, include=FALSE}
-df <- read.csv("../../AnonGeocode.csv")
+source("./scripts/DataPrep.R")
+```
+
+## Data Exploration
+
+The data was explored for erroneous data and outliers, a few instances were identified and excluded from the data set.  Several attributes were discarded due to the fact that they are the same for all observations due to the limited geographical area.  One of the provided demographics is age.  This was plotted, and a fairly normal distribution was observed.  Saratoga Springs is slightly right-skewed.  This age distribution was also explored to see if it differed markedly by voting precinct.  Apart from a slightly higher distribution in SR07, there was not a significant difference in precinct make-up in terms of age.
+  
+```{r data exploration, echo=FALSE}
+#plot histogram of Voter Age
+voter.train %>%
+ggplot(aes(Age)) +
+  geom_histogram(bins = 20) +
+  labs(title = "Saratoga Springs Registerd Voters",
+       subtitle = "Age Distribution")
+
+#precinct characteristics removing precincts which do not vote in municipal elections
+voter.train %>% filter(Precinct != "SR03:UN" & Precinct != "UCFF") %>%
+  ggplot(aes(Precinct, Age)) +
+  geom_boxplot() +
+  labs(title = "Saratoga Springs Registered Voters",
+       subtitle = "Age Distribution by Precinct")
+```
+
+As the majority of the records deal with voting records, the data was transformed into a binary classification of Voted: True/False and apriori analysis was conducted using the 2017 Primary and 2017 General Elections as the outcomes for rule-making.  This resulted in 202 association rules for Primary 2017 and 65 rules for General 2017.
+
+```{r apriori transformation, include=FALSE}
+voter.apriori <- voter.train[, 30:48]
+
+```
+```{r apriori analysis, echo=TRUE}
+#Rules for General elections
+rules.G2017 <- apriori(voter.apriori[,1:16], parameter=list (supp=0.05,conf = 0.5), appearance = list (default="lhs",rhs="Voted_X11.7.2017"), control = list (verbose=F))
+
+#Examine General Election Rules
+rules.G2017
+```
+```{r inspect General Election Rules, echo=FALSE}
+rules_conf.G <- sort(rules.G2017, by="confidence", decreasing=T)
+rules_supp.G <- sort(rules.G2017, by = "support", decreasing = T)
+inspect(head(rules_conf.G, n = 10))
+inspect(head(rules_supp.G, n = 10))
+```
+
+The rules were reviewed and commonalities were identified for use in identifying which instances of the voting history were most relevant to later outcomes.
+
+| Most Common Elections from Apriori Rules |
+| --------- |
+| 8/15/2017 | 
+| 11/8/2016 |
+| 11/3/2015 |
+| 11/4/2014 |
+| 11/5/2013 |
+| 11/6/2012 |
+| 11/2/2010 |
+
+## Data Analysis
+### K-means Clustering
+
+```{r clustering data transformation, include=FALSE}
+voter.cluster <- voter.train
+cols <- sapply(voter.cluster, is.logical)
+voter.cluster[,cols] <- lapply(voter.cluster[,cols], as.numeric)
 ```
 
 
+First it was attempted to see if there were any groupings of voters based upon their voting history and age (Option 1).  The data was analyzed using *within-sum-of-squares* to determine the optimal k for clustering.
+
+```{r Option 1 wss, echo=FALSE}
+#Evaluate optimal k -Option 1
+voter.clust.data <- dplyr::select(voter.cluster, Age, starts_with("Voted_X"))
+wss <- numeric(15)
+for (k in 1:15) wss[k] <- sum(kmeans(voter.clust.data, centers= k, nstart = 25)$withinss)
+plot(1:15, wss, type = "b", xlab = "Number of Clusters", ylab = "Within Sum of Squares")
+```
+
+It was determined to use k=3.
+
+```{r Option 1 clustering, include=FALSE}
+#Cluster Data, k=3
+clu.voters1 <- kmeans(voter.clust.data, centers = 3, nstart = 25)
+```
+```{r option 1 centroid table, echo=FALSE}
+clust1.centroid <- data.frame(clu.voters1$size, clu.voters1$centers)
+kable(clust1.centroid)
+```
+
+This clustering resulted in inconclusive results as the centroid clusters weren’t clearly differentiated.  It was determined to attempt clustering using only the elections which were identified by the apriori analysis previously discussed.
+
+```{r Option 2 clustering prep, include=FALSE}
+#Option 2 **Age, and Apriori Rule selected Voting History ####
+apriori.col <- c("Age", "Voted_X11.2.2010", "Voted_X11.6.2012", "Voted_X11.5.2013", "Voted_X11.4.2014", "Voted_X11.3.2015", "Voted_X11.8.2016", "Voted_X8.15.2017")
+voter.clust.data2 <- dplyr::select(voter.cluster, Age, apriori.col)
+voter.clust.data2$Age <- log10(voter.clust.data2$Age)
+```
+```{r Option 2 wss, echo=FALSE}
+#Evaluate optimal k -Option 2
+wss <- numeric(15)
+for (k in 1:15) wss[k] <- sum(kmeans(voter.clust.data2, centers= k, nstart = 25)$withinss)
+plot(1:15, wss, type = "b", xlab = "Number of Clusters", ylab = "Within Sum of Squares")
+```
+
+It was determined to use k = 4.  
+```{r Option 2 Clustering, include=FALSE}
+#Cluster Data, k=4
+clu.voters2 <- kmeans(voter.clust.data2, centers = 4, nstart = 25)
+voter.train.clust2 <- data.frame(voter.train, "Cluster" = clu.voters2$cluster)
+```
+```{r Option 2 Centroid Table, echo=FALSE}
+clust2.centroid <- data.frame(clu.voters2$size, clu.voters2$centers)
+kable(clust2.centroid)
+```
+```{r Option 3 Clustering, echo=FALSE}
+#Cluster data, k=5
+voter.train.sub <- dplyr::select(voter.cluster, Age, apriori.col, min.c.dist) %>% filter(!is.nan(min.c.dist)) %>% filter(min.c.dist != 0) %>% filter(min.c.dist < 20000)
+voter.train.sub$Age <- log10(voter.train.sub$Age)
+voter.train.sub$min.c.dist <- log10(voter.train.sub$min.c.dist)
+voter.train.dist <- voter.train %>% filter(!is.nan(min.c.dist)) %>% filter(min.c.dist != 0) %>% filter(min.c.dist < 20000)
+
+clu.voters3 <- kmeans(voter.train.sub, centers = 4, nstart = 25)
+voter.train.clust3 <- data.frame(voter.train.dist, "Cluster" = clu.voters3$cluster)
+
+```
+
+This resulted in more defined clusters, one which clearly represented likely voters, one which represented rare voters.  The other two clusters didn’t clearly favor one or the other and weren’t readily distinguishable from each other.  It was determined to move forward with only the “Likely Voter” cluster.
+```{r load Likely Voter Cluster Data, include=FALSE}
+#Due to issues with the random assignment of cluster number as part of K-means, the appropriate cluster was saved as an RDS file which is loaded here
+#Example code ####
+#likely.voters <- voter.train.clust2 %>% filter(Cluster == 4)
+#saveRDS(likely.voters, file = "./data/LikelyVoterCluster.RDS")
+#likely.voters.dist <- voter.train.clust3 %>% filter(Cluster == 4)
+#saveRDS(likely.voters.dist, file = "./data/LikelyVoterClusterDist.RDS")
+# Load Likely Voter Data ####
+likely.voters <- readRDS("./data/LikelyVoterCluster.RDS")
+likely.voters.dist <- readRDS("./data/LikelyVoterClusterDist.RDS")
+```
+
+This “Likely Voters” Cluster was plotted on a map of Saratoga Springs to see if there were any identifiable patterns.  
+```{r Plot Likely Voters, echo=FALSE, warning=FALSE}
+gmap.SS <- readRDS("./data/Saratoga Springs Map.RDS")
+#Plot Likely Voters
+ggmap(gmap.SS) +
+  geom_point(aes(x = lon, y = lat), data = likely.voters, 
+             alpha = .25, size = 1) +
+  scale_color_discrete(guide = 'none') +
+  stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.25, bins = 15,
+                 size = 0.1, data = likely.voters, geom = "polygon") +
+  scale_fill_gradient(breaks = c(50,450),
+                      labels = c("Low", "High"),
+                      low = "red", high = "green") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.9,0.22)) +
+  labs(title = "2019 Saratoga Springs Likely Voters")
+```
+
+This plot was then compared with a plot of Actual Voters that was obtained from the data set.  
+```{r Plot Actual Voters, echo=FALSE, warning=FALSE}
+#Plot Actual Voters
+actual.voters <- voter.train %>% filter(!is.na(voter.train$`X11.5.2019`))
+
+ggmap(gmap.SS) +
+  geom_point(aes(x = lon, y = lat), data = actual.voters, 
+             alpha = .25, size = 1) +
+  scale_color_discrete(guide = 'none') +
+  stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.25, bins = 15,
+                 size = 0.1, data = actual.voters, geom = "polygon") +
+  scale_fill_gradient(breaks = c(50,450),
+                      labels = c("Low", "High"),
+                      low = "red", high = "green") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.9,0.22)) +
+  labs(title = "2019 Saratoga Springs Actual Voters")
+```
+
+When compared visually there are significant similarities, but it is possible even visually to determine that there were differences between the two plots, with their Actual Voter plot showing differing distribution as well as more overall voters in some areas of the city.
+```{r Animation of Likely to Actual, echo=FALSE, warning=FALSE}
+#Place Animation Code Here
+animate.col <- c("Voter.ID", "lat", "lon")
+likely.sub <- likely.voters[,animate.col]
+likely.sub$State <- "Likely"
+actual.sub <- actual.voters[,animate.col]
+actual.sub$State <- "Actual"
+animate.data <- rbind(likely.sub, actual.sub)
+
+ggmap(gmap.SS) +
+  geom_point(aes(x = lon, y = lat), data = animate.data, 
+             alpha = .5, size = 1) +
+  scale_color_discrete(guide = 'none') +
+  stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.25, bins = 15,
+                 size = 0.1, data = animate.data, geom = "polygon") +
+  scale_fill_gradient(breaks = c(50,700),
+                      labels = c("Low", "High"),
+                      low = "red", high = "green") +
+  theme(legend.position = "right") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.9,0.22)) +
+  ggtitle("2019 Saratoga Springs Voter Turnout", subtitle = "{closest_state}") +
+  transition_states(animate.data$State, 
+                    state_length = 10)
+```
+```{r Quantitative Comparison of Likely Voters and Actual Voters, echo=TRUE}
+#Number of Likely Voters
+nrow(likely.voters)
+#Number of Actual Voters
+nrow(actual.voters)
+```
+
+When comparing these numbers, it appears that clustering does a pretty accurate job at identifying likely voters, however looking a little deeper at the number of voters that appear in both the Likely Voter subset and the Actual Voter subset is illuminating.
+```{r}
+correct.kmeans <- semi_join(actual.voters, likely.voters, by = "Voter.ID")
+nrow(correct.kmeans)
+```
+
+The actual number of correctly identified voters is **1437**,  this only represents 48% accuracy.
+
+----------
+
+When looking at the second plot of Actual Voters it was noted that the locations of higher voter density seemed to be located close to the homes of candidates.  Data was transformed to add a variable which calculated the distance (m) between the voter’s home and that of the nearest candidate.
+```{r Plot Actual Voters with Candidate Locations, echo=FALSE, warning=FALSE}
+#Plot Actual Voters with Candidates
+ggmap(gmap.SS) +
+  geom_point(aes(x = lon, y = lat), data = actual.voters, 
+             alpha = .25, size = 1) +
+  scale_color_discrete(guide = 'none') +
+  stat_density2d(aes(x= lon, y = lat, fill = ..level..), alpha = 0.25, bins = 15,
+                 size = 0.1, data = actual.voters, geom = "polygon") +
+  scale_fill_gradient(breaks = c(50,450),
+                      labels = c("Low", "High"),
+                      low = "red", high = "green") +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.9,0.22)) +
+  labs(title = "2019 Saratoga Springs Actual Voters") + 
+  geom_point(aes(x = lon, y = lat), data = candidate, color = 'black', size = 3)
+```
+
+## Revising the Clustering to Include Distance from Candidates
+
+In order to determine the influence that distance from a candidate that might have on clustering, the distance (m) between the voter and the closest candidate was calculated and added to the data.  This number was then log10 transformed to standardize it's effect on clustering.  This data set was then analyzed to determine the optimal *k* value.
+```{r Option 3 wss, echo=FALSE}
+#Evaluate optimal k -Option 3
+wss <- numeric(15)
+for (k in 1:15) wss[k] <- sum(kmeans(voter.train.sub, centers= k, nstart = 25)$withinss)
+plot(1:15, wss, type = "b", xlab = "Number of Clusters", ylab = "Within Sum of Squares")
+```
+
+It was determined to use k = 4.
+
+```{r Option 3 Centroid Table, echo=FALSE}
+clust3.centroid <- data.frame(clu.voters3$size, clu.voters3$centers)
+kable(clust3.centroid)
+```
+```{r}
+nrow(actual.voters)
+correct.kmeans.dist <- semi_join(actual.voters, likely.voters.dist, by = "Voter.ID")
+nrow(correct.kmeans.dist)
+```
+
+We can see that inclusion of the distance from candidates actually decreases the accuracy somewhat.
+```{r Decision Tree Analysis, include=FALSE, warning=FALSE}
+# I also performed Decision Tree Analysis, but R markdown couldn't handle visualizing it and I ran out of time to fix the issues with the model.  So it is not included.
+```
+
+## Conclusion
+
+While the model has some value as a means to eliminate likely Non-Voters, it is not yet robust enough in order to correctly identify which voters are likely to participate in municipal elections.
